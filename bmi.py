@@ -26,9 +26,5 @@ height_m = height_in * INCHES_TO_METERS
 bmi = weight_kg / height_m ** 2
 
 # ===== OUTPUT SECTION =====
-bmi_output = f"Your BMI is  {bmi}"
+bmi_output = f"BMI is {bmi}"
 print(bmi_output)
-
-# remove huge decimal
-#bmi_output_integer = f"Your BMI is {int(bmi)}"
-#print(bmi_output_integer)

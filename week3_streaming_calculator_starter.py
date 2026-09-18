@@ -26,30 +26,47 @@ percent_correct = total_monthly / budget_cap * 100
 weekly_cost = total_monthly / 4
 # same as above but divide into weekly costs
 budget_left = budget_cap - total_monthly
-# how much of the budget is left over after subscriptions
-saving_months = saving_goal / budget_left
 # current number of months it will take to save $500
 monthly_no_netflix = hulu + spotify + disney_plus + youtube
 # monthly cost of subscriptions minus netflix
 budget_no_netflix = budget_cap - monthly_no_netflix
 # budget left over if you cancel netflix
-saving_months_new = saving_goal / budget_no_netflix
+saving_months = saving_goal / budget_no_netflix
 # number of months it will take to save $500 minus netflix
 
 
-
-# print("$ " + str(total_monthly))
-
 #===== OUTPUTS =====
 # show values of calculations from above
-print(f"Total montly budget:   $ {budget_cap:.2f}")
-print(f"Total monthly cost:    $ {total_monthly}")
-print(f"Total weekly cost:     $ {weekly_cost:.2f}")
-print(f"Percent of budget used:  {percent_correct:.2f} %")
-print(" ")
-print(f"Months to save $500 :  {saving_months:.0f}")
-print(f"Months to save $500 by cancelling Netflix: {saving_months_new:.0f}")
-print(" ")
+print(f"Total montly budget:                     $ {budget_cap:.2f}")
+print(f"Total monthly cost:                      $ {total_monthly}")
+print(f"Total weekly cost:                       $ {weekly_cost:.2f}")
+print(f"Percent of budget used:                    {percent_correct:.1f} %")
+print(f"Months to save $500 by cancelling Netflix: {saving_months:.0f}")
+
+# What share of the total bill is Netflix alone?
+netflix_share = netflix / total_monthly * 100
+print(f"Netflix's share of the bill:               {netflix_share:.1f} %")
+
+# How many whole months of Netflix does $100 buy?
+whole_months = int(100 / netflix)
+print(f"How many months you can buy with $100:     {whole_months}")
+
+# How can you see the leftover money?
+leftover_manual = 100 - whole_months * netflix
+print(f"How much money is left from $100:        $ {leftover_manual:.2f}")
+
+# What is the cost of the Netflix?
+#whole_months_floor = int(100 // netflix) 
+#leftover_mod = 100 % netflix
+#print(whole_months_floor)
+#print(f"{leftover_mod:.2f}")
+
+print("")
+
+# Disney is raising prices by 8%, what is new total monthly bill?
+new_total = total_monthly - disney_plus + (disney_plus * 1.08)
+print(f"New total after price increase:          $ {new_total:.2f}")
+
 
 
 # ============================================================
@@ -59,20 +76,22 @@ print(" ")
 
 # ----- PROCESS: Annual cost with a discount (the wrong way, on purpose) -----
 # Type this exactly as shown.
+
+
 discount = 0.10
-annual_wrong = total_monthly * 12 * 1 - discount
-print(annual_wrong)
-
-# ADD THIS: as a comment, write down whether that looks like a real
-# discount was applied to a full year of cost. Compare with your
-# neighbor before moving on.
-
+annual_cost = (netflix + hulu + spotify + disney_plus + youtube) * 12
 
 # ----- PROCESS: Annual cost with a discount (the correct, deliberate way) -----
 # ADD THIS: write annual_correct. Group (1 - discount) in parentheses
 # before multiplying by total_monthly and 12
 
+annual_correct = total_monthly * 12 * (1 - discount)
+
+
+
 
 # ----- OUTPUT -----
 # ADD THIS: print annual_correct as a formatted f-string, labeled
 # "Annual cost with discount: $", rounded to 2 decimal places
+print(f"Annual cost without discount:            $ {annual_cost:.2f}")
+print(f"Annual cost with discount:               $ {annual_correct:.2f}")
