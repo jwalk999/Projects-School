@@ -1,0 +1,10 @@
+patient_id,name,age,weight_lbs,height_in,condition
+P001,alvarez maria,34,148,65,hypertension
+P002, chen wei ,52, 210,70,
+P003,thompson derek,29,165,68,none
+P004,patel ananya,45,132,62,diabetes
+P005,johnson marcus,61,195, 71 ,
+P006,nguyen linh,38,140,64,asthma
+P007,washington keisha,47,178,66,
+P008,garcia luis,55,205,69,hypertension
+

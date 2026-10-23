@@ -1,0 +1,13 @@
+Alvarez Maria, Age 34, BMI 24.6, Condition Hypertension
+Chen Wei, Age 52, BMI 30.1, Condition Not specified
+Thompson Derek, Age 29, BMI 25.1, Condition None
+Patel Ananya, Age 45, BMI 24.1, Condition Diabetes
+Johnson Marcus, Age 61, BMI 27.2, Condition Not specified
+Nguyen Linh, Age 38, BMI 24.0, Condition Asthma
+Washington Keisha, Age 47, BMI 28.7, Condition Not specified
+Garcia Luis, Age 55, BMI 30.3, Condition Hypertension
+
+Patients Processed: 8
+Average BMI: 26.8
+Highest BMI: Garcia Luis (30.3)
+Lowest BMI: Nguyen Linh (24.0)
