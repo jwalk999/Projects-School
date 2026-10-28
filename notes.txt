@@ -1,3 +1,0 @@
-az vm run-command invoke -g $RG -n $VM --command-id RunShellScript \
-  --scripts "hostnamectl set-hostname --static JONATHAN-PC1; hostname demo-running; hostnamectl" \
-  --query "value[0].message" -o tsv
