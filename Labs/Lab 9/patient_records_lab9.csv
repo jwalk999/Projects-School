@@ -1,0 +1,16 @@
+patient_id,name,age,weight_lbs,height_in,condition
+P-1001,Maria Chen,34,145,64,Hypertension
+P-1002,James Patel,52,210,70,Diabetes
+P-1003,Alicia Gomez,,160,66,Asthma
+P1004,Tom Wyatt,45,190,69,Obesity
+P-1005,Noah Kim,29,N/A,71,Healthy
+P-1006,Grace Lee,150,130,63,Hypertension
+P-1007,Omar Haddad,38,175,68,Diabetes
+p-1008,Linda Park,61,155,,Hypertension
+P-1009,Derek Hall,8,70,48,Healthy
+P-1010,Sara Blake,27,-15,65,Asthma
+P-10011,Evan Cruz,44,200,72,Hypertension
+P-1012,Nina Osei,55,180,67,Diabetes
+P-1013,,33,150,64,Healthy
+P-1014,Carlos Ruiz,120,140,,Obesity
+P-1015,Priya Nair,41,165,66,Hypertension
