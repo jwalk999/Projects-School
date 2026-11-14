@@ -1,0 +1,11 @@
+{
+    "name": "Realty Website",
+    "client": "Example Realty Co.",
+    "deadline": "2026-12-15",
+    "milestones": [
+        {"title": "Home page", "percent_complete": 100, "due_date": "2026-11-01", "message": "Live"},
+        {"title": "Contact form", "percent_complete": 60, "due_date": "2026-11-20", "message": ""},
+        {"title": "Listings page", "percent_complete": 30, "due_date": "2026-12-01", "message": ""},
+        {"title": "Image gallery", "percent_complete": 0, "due_date": "2026-12-10", "message": ""}
+    ]
+}
