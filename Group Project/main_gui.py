@@ -1,6 +1,6 @@
 """Developer progress dashboard (GUI only).
 
-File Name: main.py
+File Name: main_gui.py
 Authors: Jonathan Walker, Briana Campbell, Isaiah McSwain
 Date: 9 Nov 2026
 
