@@ -10,6 +10,9 @@ Scope:
     window. It holds no program logic: loading JSON, comparing files,
     and fetching GitHub commits live in other modules, which hand their
     results to this dashboard to display.
+
+    Run the program from main.py, which creates the data and starts
+    this window.
 """
 
 import tkinter as tk
@@ -20,8 +23,10 @@ import matplotlib
 # Tell matplotlib to draw into tkinter. This must run before the
 # backend import below, which is why that import isn't at the top.
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # noqa: I001
 from matplotlib.figure import Figure
+
+from entities import Client
 
 # ---------------------------------------------------------------------------
 # Mock data
@@ -50,15 +55,18 @@ class DeveloperDashboard:
         draw_* / show_* methods refresh what those widgets display.
     """
 
-    def __init__(self, root: tk.Tk, width: int = 1200, height: int = 800) -> None:
+    def __init__(self, root: tk.Tk, client: Client,
+                 width: int = 1200, height: int = 800) -> None:
         """Sets up the main window and builds every section.
 
         Args:
             root: The main tkinter window.
+            client: The client whose project this dashboard shows.
             width: Starting window width in pixels.
             height: Starting window height in pixels.
         """
         self.root = root
+        self.client = client
         self.width = width
         self.height = height
 
@@ -95,19 +103,24 @@ class DeveloperDashboard:
         self.dev_frame = tk.Frame(self.root, padx=10, pady=10)
         self.dev_frame.pack(side="top", fill="x")
 
-        # Build each section. Panels must exist before anything placed
-        # inside them, so build_middle_row comes before the pie and log.
+        # Build each section. A row's panels must exist before anything is
+        # placed inside them, so each build_*_row comes before its contents.
         self.build_header()
         self.build_cards()
         self.build_middle_row()
         self.build_pie_graph()
         self.build_changes_log()
         self.build_bottom_row()
+        self.build_requirements()
         self.build_dev_row()
 
         # Placeholder data until the data modules are connected.
         self.draw_pie(80)
         self.show_changes(MOCK_CHANGES)
+
+        # Client data, from the Client object passed in by main.py.
+        self.show_client()
+        self.show_requirements()
 
     def make_panel(self, parent: tk.Frame, title: str, column: int) -> tk.LabelFrame:
         """Creates a titled, bordered panel in a row.
@@ -126,12 +139,12 @@ class DeveloperDashboard:
         return panel
 
     # -----------------------------------------------------------------------
-    # Header
+    # Header: project and client info, view toggle
     # -----------------------------------------------------------------------
 
     def build_header(self) -> None:
         """Creates the project title, client and deadline info, and view toggle."""
-        # Sub-frame so the three labels stack vertically on the left.
+        # Sub-frame so the info labels stack vertically on the left.
         self.info_frame = tk.Frame(self.header_frame)
         self.info_frame.pack(side="left")
 
@@ -139,9 +152,13 @@ class DeveloperDashboard:
                                     font=("Arial", 18, "bold"))
         self.title_label.pack(anchor="w")
 
-        self.client_name = tk.Label(self.info_frame, text="Client: ",
-                                    font=("Arial", 12))
-        self.client_name.pack(anchor="w")
+        # Text for these two is filled in by show_client().
+        self.client_name_label = tk.Label(self.info_frame, text="Client: ",
+                                          font=("Arial", 12))
+        self.client_name_label.pack(anchor="w")
+
+        self.client_contact_label = tk.Label(self.info_frame, font=("Arial", 12))
+        self.client_contact_label.pack(anchor="w")
 
         self.deadline = tk.Label(self.info_frame, text="Deadline: ",
                                  font=("Arial", 12))
@@ -150,6 +167,12 @@ class DeveloperDashboard:
         self.view_button = tk.Button(self.header_frame, text="Client view",
                                      command=self.toggle_view)
         self.view_button.pack(side="right")
+
+    def show_client(self) -> None:
+        """Updates the header with the current client's information."""
+        self.client_name_label.config(text=f"Client: {self.client.name}")
+        self.client_contact_label.config(
+            text=f"{self.client.email} | {self.client.phone}")
 
     def toggle_view(self) -> None:
         """Switches between developer view and client view.
@@ -284,28 +307,43 @@ class DeveloperDashboard:
             )
 
     # -----------------------------------------------------------------------
-    # Bottom row: commit activity and upcoming milestones
+    # Bottom row: client requirements, commit activity, upcoming milestones
     # -----------------------------------------------------------------------
 
     def build_bottom_row(self) -> None:
-        """Creates the commit activity and upcoming milestones panels."""
-        self.bottom_frame.columnconfigure(0, weight=1)
-        self.bottom_frame.columnconfigure(1, weight=1)
+        """Creates the requirements, commit activity, and upcoming milestones panels."""
+        # Equal column weights split the width into thirds.
+        for column in range(3):
+            self.bottom_frame.columnconfigure(column, weight=1)
         self.bottom_frame.rowconfigure(0, weight=1)
 
-        self.commits_panel = self.make_panel(self.bottom_frame, "Recent Commit Activity", 0)
+        self.requirements_panel = self.make_panel(
+            self.bottom_frame, "Client Requirements", 0)
+        self.commits_panel = self.make_panel(
+            self.bottom_frame, "Recent Commit Activity", 1)
         self.upcoming_milestones_panel = self.make_panel(
-            self.bottom_frame, "Upcoming Milestones", 1)
+            self.bottom_frame, "Upcoming Milestones", 2)
+
+    def build_requirements(self) -> None:
+        """Creates the client requirements list. Filled by show_requirements()."""
+        self.requirements_list = tk.Listbox(self.requirements_panel, font=("Arial", 12))
+        self.requirements_list.pack(fill="both", expand=True)
+
+    def show_requirements(self) -> None:
+        """Refreshes the requirements list from the client object."""
+        self.requirements_list.delete(0, tk.END)  # Clear old entries
+        for requirement in self.client.requirements:
+            self.requirements_list.insert(tk.END, requirement)
 
     # -----------------------------------------------------------------------
     # Developer tools (hidden in client view)
     # -----------------------------------------------------------------------
 
     def build_dev_row(self) -> None:
-        """Creates the developer-only buttons.
+        """Creates the developer-only controls.
 
-        The buttons have no commands yet. They will call the data modules
-        (JSON loading, GitHub sync) once those exist.
+        The JSON, GitHub, and note buttons have no commands yet. They will
+        call the data modules once those exist.
         """
         self.dev_tools_label = tk.Label(self.dev_frame,
                                         text="Developer tools (hidden in client view)",
@@ -325,13 +363,24 @@ class DeveloperDashboard:
                        self.sync_github_button, self.notes_button):
             button.pack(side="left", anchor="s")
 
+        # Type a requirement, then click the button to add it to the client.
+        self.requirement_entry = tk.Entry(self.dev_frame, width=25)
+        self.requirement_entry.pack(side="left", padx=(20, 5))  # 20px gap on the left
 
-def main() -> None:
-    """Creates the window and starts the tkinter event loop."""
-    root = tk.Tk()
-    DeveloperDashboard(root)
-    root.mainloop()  # Keeps the window open; code after this runs only on close
+        self.add_requirement_button = tk.Button(self.dev_frame, text="Add requirement",
+                                                command=self.add_requirement)
+        self.add_requirement_button.pack(side="left")
 
+    def add_requirement(self) -> None:
+        """Adds the typed requirement to the client and refreshes the list.
 
-if __name__ == "__main__":
-    main()
+        The Client object stores the data; this method only reads the input
+        box, hands the text to the client, and updates the display.
+        """
+        text = self.requirement_entry.get().strip()
+        if not text:
+            return  # Ignore empty input
+
+        self.client.add_requirement(text)
+        self.requirement_entry.delete(0, tk.END)  # Clear the input box
+        self.show_requirements()
