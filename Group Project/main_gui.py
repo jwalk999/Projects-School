@@ -13,11 +13,13 @@ Scope:
 
     Run the program from main.py, which creates the data and starts
     this window.
+
+    (Bri) Added import json and filedialog
 """
 
 import tkinter as tk
-from tkinter import ttk
-
+from tkinter import filedialog, ttk
+import json
 import matplotlib
 
 # Tell matplotlib to draw into tkinter. This must run before the
@@ -55,8 +57,9 @@ class DeveloperDashboard:
         draw_* / show_* methods refresh what those widgets display.
     """
 
-    def __init__(self, root: tk.Tk, client: Client,
-                 width: int = 1200, height: int = 800) -> None:
+    def __init__(
+        self, root: tk.Tk, client: Client, width: int = 1200, height: int = 800
+    ) -> None:
         """Sets up the main window and builds every section.
 
         Args:
@@ -64,6 +67,12 @@ class DeveloperDashboard:
             client: The client whose project this dashboard shows.
             width: Starting window width in pixels.
             height: Starting window height in pixels.
+
+            (Bri) Added variables to track the data.
+            Also added methods to this class to handle opening files, parsing JSON,
+            comparing them, and updating the table.
+
+            (Bri) def a few others.
         """
         self.root = root
         self.client = client
@@ -77,6 +86,95 @@ class DeveloperDashboard:
         self.root.geometry(f"{self.width}x{self.height}")
 
         self.build_layout()
+
+        # Store loaded JSON data
+        self.old_json_data = None
+        self.new_json_data = None
+
+    def load_old_json(self) -> None:
+        """Opens a file dialog to load the baseline (old) JSON file."""
+        filepath = filedialog.askopenfilename(
+            title="Select Old JSON file",
+            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+        )
+        if filepath:
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    self.old_json_data = json.load(f)
+                print(f"Loaded old JSON from {filepath}")
+                self.try_compute_diff()
+            except Exception as e:
+                print(f"Error loading JSON: {e}")
+
+    def load_new_json(self) -> None:
+        """Opens a file dialog to load the current (new) JSON file."""
+        filepath = filedialog.askopenfilename(
+            title="Select New JSON FIle",
+            filetypes=[("JSON Files", "*.json"), ("All Files", "*.*")],
+        )
+        if filepath:
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    self.new_json_data = json.load(f)
+                print(f"Loaded new JSON from {filepath}")
+                self.try_compute_diff()
+            except Exception as e:
+                print(f"Error loading JSON: {e}")
+
+    def try_compute_diff(self) -> None:
+        """Computes the diff if both old and new JSON files are loaded."""
+        if self.old_json_data is not None and self.new_json_data is not None:
+            changes = self.compute_json_diff(self.old_json_data, self.new_json_data)
+            self.show_changes(changes)
+
+    def compute_json_diff(self, old_data: dict, new_data: dict) -> list[dict[str, str]]:
+        """Compares two JSON dictionaries and returns a list of change records."""
+        changes = []
+
+        old_keys = set(old_data.keys())
+        new_keys = set(new_data.keys())
+
+        # Added keys
+        for key in new_keys - old_keys:
+            changes.append(
+                {
+                    "type": "added",
+                    "description": f"Added field: {key}",
+                    "date": "2026-11-14",
+                }
+            )
+
+        # Removed keys
+        for key in old_keys - new_keys:
+            changes.append(
+                {
+                    "type": "removed",
+                    "description": f"Removed field: {key}",
+                    "date": "2026-11-14",
+                }
+            )
+
+        # Changed values
+        for key in old_keys & new_keys:
+            if old_data[key] != new_data[key]:
+                changes.append(
+                    {
+                        "type": "changed",
+                        "description": f"Updated value for: {key}",
+                        "date": "2026-11-14",
+                    }
+                )
+
+        if not changes:
+            changes.append(
+                {
+                    "type": "changed",
+                    "description": "No differences found between files",
+                    "date": "2026-11-14",
+                }
+            )
+
+        return changes
 
     # -----------------------------------------------------------------------
     # Layout
@@ -148,31 +246,34 @@ class DeveloperDashboard:
         self.info_frame = tk.Frame(self.header_frame)
         self.info_frame.pack(side="left")
 
-        self.title_label = tk.Label(self.info_frame, text="Project Name",
-                                    font=("Arial", 18, "bold"))
+        self.title_label = tk.Label(
+            self.info_frame, text="Project Name", font=("Arial", 18, "bold")
+        )
         self.title_label.pack(anchor="w")
 
         # Text for these two is filled in by show_client().
-        self.client_name_label = tk.Label(self.info_frame, text="Client: ",
-                                          font=("Arial", 12))
+        self.client_name_label = tk.Label(
+            self.info_frame, text="Client: ", font=("Arial", 12)
+        )
         self.client_name_label.pack(anchor="w")
 
         self.client_contact_label = tk.Label(self.info_frame, font=("Arial", 12))
         self.client_contact_label.pack(anchor="w")
 
-        self.deadline = tk.Label(self.info_frame, text="Deadline: ",
-                                 font=("Arial", 12))
+        self.deadline = tk.Label(self.info_frame, text="Deadline: ", font=("Arial", 12))
         self.deadline.pack(anchor="w")
 
-        self.view_button = tk.Button(self.header_frame, text="Client view",
-                                     command=self.toggle_view)
+        self.view_button = tk.Button(
+            self.header_frame, text="Client view", command=self.toggle_view
+        )
         self.view_button.pack(side="right")
 
     def show_client(self) -> None:
         """Updates the header with the current client's information."""
         self.client_name_label.config(text=f"Client: {self.client.name}")
         self.client_contact_label.config(
-            text=f"{self.client.email} | {self.client.phone}")
+            text=f"{self.client.email} | {self.client.phone}"
+        )
 
     def toggle_view(self) -> None:
         """Switches between developer view and client view.
@@ -237,7 +338,9 @@ class DeveloperDashboard:
         self.middle_frame.columnconfigure(1, weight=1)
         self.middle_frame.rowconfigure(0, weight=1)
 
-        self.milestone_panel = self.make_panel(self.middle_frame, "Milestone Progress", 0)
+        self.milestone_panel = self.make_panel(
+            self.middle_frame, "Milestone Progress", 0
+        )
         self.changes_panel = self.make_panel(self.middle_frame, "Recent Changes", 1)
 
     def build_pie_graph(self) -> None:
@@ -269,8 +372,9 @@ class DeveloperDashboard:
         style.configure("Treeview", rowheight=28)
 
         columns = ("type", "description", "date")  # Internal column IDs
-        self.changes_tree = ttk.Treeview(self.changes_panel, columns=columns,
-                                         show="headings", height=8)  # height = rows
+        self.changes_tree = ttk.Treeview(
+            self.changes_panel, columns=columns, show="headings", height=8
+        )  # height = rows
 
         # Text shown at the top of each column
         self.changes_tree.heading("type", text="Type")
@@ -300,7 +404,7 @@ class DeveloperDashboard:
 
         for change in changes:
             self.changes_tree.insert(
-                "",     # Top level (no parent row)
+                "",  # Top level (no parent row)
                 "end",  # Add to the bottom
                 values=(change["type"], change["description"], change["date"]),
                 tags=(change["type"],),  # Trailing comma makes this a tuple
@@ -318,11 +422,14 @@ class DeveloperDashboard:
         self.bottom_frame.rowconfigure(0, weight=1)
 
         self.requirements_panel = self.make_panel(
-            self.bottom_frame, "Client Requirements", 0)
+            self.bottom_frame, "Client Requirements", 0
+        )
         self.commits_panel = self.make_panel(
-            self.bottom_frame, "Recent Commit Activity", 1)
+            self.bottom_frame, "Recent Commit Activity", 1
+        )
         self.upcoming_milestones_panel = self.make_panel(
-            self.bottom_frame, "Upcoming Milestones", 2)
+            self.bottom_frame, "Upcoming Milestones", 2
+        )
 
     def build_requirements(self) -> None:
         """Creates the client requirements list. Filled by show_requirements()."""
@@ -344,32 +451,93 @@ class DeveloperDashboard:
 
         The JSON, GitHub, and note buttons have no commands yet. They will
         call the data modules once those exist.
+
+        (Bri) Added commands to buttons.
         """
-        self.dev_tools_label = tk.Label(self.dev_frame,
-                                        text="Developer tools (hidden in client view)",
-                                        font=("Arial", 16, "bold"))
+        self.dev_tools_label = tk.Label(
+            self.dev_frame,
+            text="Developer tools (hidden in client view)",
+            font=("Arial", 16, "bold"),
+        )
         self.dev_tools_label.pack(side="left")
 
-        self.load_old_button = tk.Button(self.dev_frame, text="Load old JSON",
-                                         padx=10, pady=10)
-        self.load_new_button = tk.Button(self.dev_frame, text="Load new JSON",
-                                         padx=10, pady=10)
-        self.sync_github_button = tk.Button(self.dev_frame, text="Sync GitHub",
-                                            padx=10, pady=10)
-        self.notes_button = tk.Button(self.dev_frame, text="Note to Client",
-                                      padx=10, pady=10)
+        self.load_old_button = tk.Button(
+            self.dev_frame,
+            text="Load old JSON",
+            command=self.load_old_json,
+            padx=10,
+            pady=10,
+        )
+        self.load_new_button = tk.Button(
+            self.dev_frame,
+            text="Load new JSON",
+            command=self.load_new_json,
+            padx=10,
+            pady=10,
+        )
+        self.sync_github_button = tk.Button(
+            self.dev_frame,
+            text="Sync GitHub",
+            command=self.sync_github,
+            padx=10,
+            pady=10,
+        )
+        self.notes_button = tk.Button(
+            self.dev_frame,
+            text="Note to Client",
+            command=self.open_notes_dialog,
+            padx=10,
+            pady=10,
+        )
 
-        for button in (self.load_old_button, self.load_new_button,
-                       self.sync_github_button, self.notes_button):
+        for button in (
+            self.load_old_button,
+            self.load_new_button,
+            self.sync_github_button,
+            self.notes_button,
+        ):
             button.pack(side="left", anchor="s")
 
         # Type a requirement, then click the button to add it to the client.
         self.requirement_entry = tk.Entry(self.dev_frame, width=25)
         self.requirement_entry.pack(side="left", padx=(20, 5))  # 20px gap on the left
 
-        self.add_requirement_button = tk.Button(self.dev_frame, text="Add requirement",
-                                                command=self.add_requirement)
+        self.add_requirement_button = tk.Button(
+            self.dev_frame, text="Add requirement", command=self.add_requirement
+        )
         self.add_requirement_button.pack(side="left")
+
+    def sync_github(self) -> None:
+        """Simulates syncing with GitHub to update commite metrics."""
+        print("Syncing with GitHub repository...")
+        # Updates the commits summary card as an exmaple
+        self.commits_card.config(text="12")
+
+    def open_notes_dialog(self) -> None:
+        """Opens a popup window allowing the developer to write a note to the client."""
+        note_window = tk.Toplevel(self.root)
+        note_window.title("Send Note to Client")
+        note_window.geometry("400x300")
+
+        tk.Label(
+            note_window,
+            text="Write a note for the client dashboard:",
+            font=("Arial", 11),
+        ).pack(anchor="w", padx=10, pady=10)
+
+        note_text = tk.Text(note_window, wrap="word", height=8, width=45)
+        note_text.pack(padx=10, pady=5)
+
+        def save_note() -> None:
+            message = note_text.get("1.0", tk.END).strip()
+            if message:
+                print(f"Client Note Saved: {message}")
+                note_window.destroy()
+
+        save_button = tk.Button(
+            note_window, text="Save Note", command=save_note, padx=10, pady=5
+        )
+        save_button.pack(pady=10)
 
     def add_requirement(self) -> None:
         """Adds the typed requirement to the client and refreshes the list.
