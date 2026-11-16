@@ -1,0 +1,37 @@
+{
+    "site": "Example Realty Co.",
+    "url": "https://example-realty.test",
+    "snapshot_date": "2026-11-12",
+    "pages": {
+        "home": {
+            "title": "Welcome to Example Realty",
+            "elements": {
+                "hero_image": {"type": "image", "content": "images/hero_v2.jpg"},
+                "tagline": {"type": "text", "content": "Find your dream home in the Foothills."},
+                "nav_menu": {"type": "navigation", "content": ["Home", "About", "Listings", "Contact"]},
+                "featured_listing": {"type": "listing", "content": "123 Main St, Hickory NC - 3 bed, 2 bath"}
+            }
+        },
+        "about": {
+            "title": "About Our Team",
+            "elements": {
+                "team_bio": {"type": "text", "content": "Family owned and operated since 1998, serving the Catawba Valley."},
+                "office_photo": {"type": "image", "content": "images/office.jpg"}
+            }
+        },
+        "contact": {
+            "title": "Contact",
+            "elements": {
+                "phone_number": {"type": "text", "content": "828-555-0100"},
+                "contact_form": {"type": "form", "content": ["name", "email", "message"]},
+                "office_map": {"type": "embed", "content": "maps/office_location"}
+            }
+        },
+        "listings": {
+            "title": "Current Listings",
+            "elements": {
+                "listing_grid": {"type": "listing", "content": ["123 Main St", "45 Oak Ave", "9 Lakeview Dr"]}
+            }
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "site": "Example Realty Co.",
+    "url": "https://example-realty.test",
+    "snapshot_date": "2026-11-01",
+    "pages": {
+        "home": {
+            "title": "Welcome to Example Realty",
+            "elements": {
+                "hero_image": {"type": "image", "content": "images/hero_v1.jpg"},
+                "tagline": {"type": "text", "content": "Find your dream home in the Foothills."},
+                "placeholder_text": {"type": "text", "content": "Lorem ipsum dolor sit amet."},
+                "nav_menu": {"type": "navigation", "content": ["Home", "About"]}
+            }
+        },
+        "about": {
+            "title": "About Us",
+            "elements": {
+                "team_bio": {"type": "text", "content": "Family owned since 1998."},
+                "office_photo": {"type": "image", "content": "images/office.jpg"}
+            }
+        },
+        "contact": {
+            "title": "Contact",
+            "elements": {
+                "phone_number": {"type": "text", "content": "828-555-0100"}
+            }
+        }
+    }
+}

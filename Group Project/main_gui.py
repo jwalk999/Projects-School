@@ -6,10 +6,9 @@ Date: 9 Nov 2026
 
 Scope:
     A GUI template any freelance developer can use to show clients the
-    progress on their project. This file only builds and updates the
-    window. It holds no program logic: loading JSON, comparing files,
-    and fetching GitHub commits live in other modules, which hand their
-    results to this dashboard to display.
+    progress on their project. This file builds and updates the
+    window. It handles: loading JSONs, comparing files,
+    and fetching GitHub commits.
 
     Run the program from main.py, which creates the data and starts
     this window.
@@ -17,9 +16,10 @@ Scope:
     (Bri) Added import json and filedialog
 """
 
+import json
 import tkinter as tk
 from tkinter import filedialog, ttk
-import json
+
 import matplotlib
 
 # Tell matplotlib to draw into tkinter. This must run before the
@@ -90,6 +90,7 @@ class DeveloperDashboard:
         # Store loaded JSON data
         self.old_json_data = None
         self.new_json_data = None
+        
 
     def load_old_json(self) -> None:
         """Opens a file dialog to load the baseline (old) JSON file."""
@@ -103,8 +104,11 @@ class DeveloperDashboard:
                     self.old_json_data = json.load(f)
                 print(f"Loaded old JSON from {filepath}")
                 self.try_compute_diff()
-            except Exception as e:
+            # Change Exception to OSError
+            except OSError as e:
                 print(f"Error loading JSON: {e}")
+            except json.JSONDecodeError as e:
+                print(f"Not a valid JSON file: {e}")
 
     def load_new_json(self) -> None:
         """Opens a file dialog to load the current (new) JSON file."""
@@ -118,16 +122,23 @@ class DeveloperDashboard:
                     self.new_json_data = json.load(f)
                 print(f"Loaded new JSON from {filepath}")
                 self.try_compute_diff()
-            except Exception as e:
+            # Change Exception to OSError
+            except OSError as e:
                 print(f"Error loading JSON: {e}")
+            except json.JSONDecodeError as e:
+                print(f"Not a valid JSON file: {e}")
 
     def try_compute_diff(self) -> None:
         """Computes the diff if both old and new JSON files are loaded."""
         if self.old_json_data is not None and self.new_json_data is not None:
-            changes = self.compute_json_diff(self.old_json_data, self.new_json_data)
+            changes = self.compare_snapshots(self.old_json_data, self.new_json_data)
             self.show_changes(changes)
 
-    def compute_json_diff(self, old_data: dict, new_data: dict) -> list[dict[str, str]]:
+    ''' Adding elements to the existing logic, changes made are only showing
+     the surface level.'''
+
+    def compute_json_diff(self, old_data: dict, new_data: dict,
+                          prefix: str = "") -> list[dict[str, str]]:
         """Compares two JSON dictionaries and returns a list of change records."""
         changes = []
 
@@ -139,7 +150,7 @@ class DeveloperDashboard:
             changes.append(
                 {
                     "type": "added",
-                    "description": f"Added field: {key}",
+                    "description": f"Added field: {prefix}{key}",
                     "date": "2026-11-14",
                 }
             )
@@ -149,7 +160,7 @@ class DeveloperDashboard:
             changes.append(
                 {
                     "type": "removed",
-                    "description": f"Removed field: {key}",
+                    "description": f"Removed field: {prefix}{key}",
                     "date": "2026-11-14",
                 }
             )
@@ -160,21 +171,45 @@ class DeveloperDashboard:
                 changes.append(
                     {
                         "type": "changed",
-                        "description": f"Updated value for: {key}",
+                        "description": f"Updated value for: {prefix}{key}",
                         "date": "2026-11-14",
                     }
                 )
 
-        if not changes:
-            changes.append(
-                {
-                    "type": "changed",
-                    "description": "No differences found between files",
-                    "date": "2026-11-14",
-                }
-            )
+        # Moving no changes block to method below
 
         return changes
+
+    def compare_snapshots(self, old_data: dict, new_data: dict) -> list[dict[str, str]]:
+        """Runs compute_json_diff() on each page's elements. Ensuring all changes
+            are shown.
+        
+        Args: 
+            old_data: The earlier website snapshot.
+            new_data: The later website snapshot.
+            
+        Returns:
+            Change records from every page, or one "info" record if none.
+        """
+        old_pages = old_data.get("pages", {})
+        new_pages = new_data.get("pages", {})
+        changes = []
+
+        # Every page in either file. A missing page counts as empty.
+        # A new page's elements all show as "added".
+        for page in sorted(set(old_pages) | set(new_pages)):
+            old_elements = old_pages.get(page, {}).get("elements", {})
+            new_elements = new_pages.get(page, {}).get("elements", {})
+            changes.extend(self.compute_json_diff(old_elements, new_elements,
+                                                  prefix=f"{page}: "))
+
+        if not changes:
+            changes.append({"type": "info",
+                            "description": "No differences found between files",
+                            "date": "2026-11-14"})
+
+        return changes
+    
 
     # -----------------------------------------------------------------------
     # Layout
@@ -508,9 +543,9 @@ class DeveloperDashboard:
         self.add_requirement_button.pack(side="left")
 
     def sync_github(self) -> None:
-        """Simulates syncing with GitHub to update commite metrics."""
+        """Simulates syncing with GitHub to update commit metrics."""
         print("Syncing with GitHub repository...")
-        # Updates the commits summary card as an exmaple
+        # Updates the commits summary card as an example
         self.commits_card.config(text="12")
 
     def open_notes_dialog(self) -> None:

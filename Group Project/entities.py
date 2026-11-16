@@ -3,7 +3,7 @@ File Name: entities.py
 Authors: Jonathan Walker, Briana Campbell, Isaiah McSwain
 Date: 13 Nov 2026
 
-Scope: Create the entities that belong in the dashboard.
+Scope: Create the entities that belong in the dashboard. (Isaiah)
 
 """
 
